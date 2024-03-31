@@ -6,19 +6,19 @@ A lot copied from [Paul Egan on slackoverflow](https://stackoverflow.com/a/62105
 When Google Sheets is edited, wait for delay and then send update message to Discord.
 
 ## Installation
-1. Create google sheet
+### Create google sheet
  * Configure colums, other tabs etc.
  * Select **Extensions** in the toolbar and then **App Scripts**, you will be taken to a new page
-2. Create Webhook in Discord
+### Create Webhook in Discord
  * Click **Edit** on the Channel you want to post the update messages to
  * Select **Integrations** and then **Create Webhook**, customize it to your liking with name and image
  * Copy the Webhook URL for use later.
-3. Building the brains aka. App Scripts
+### Building the brains aka. App Scripts
  * Add a name to the project so you know what it does, eg. "MySheet Discord Notifier" 
  * Copy the code from this repository and paste into the file "Code.gs" (this could have different names depending on your language but there is only one file per default)
  * Replace the values [DISCORD_WEBHOOK_URL] [GOOGLE_SPREADSHEET_URL] with your own
  * Save the file
-4. Connecting a Trigger(event) from the spreadsheet to starting the script
+### Connecting a Trigger(event) from the spreadsheet to starting the script
  * In Apps Script click **Triggers** in the sidebar and then **Add Trigger**
  * Set the options in this order:
     onHandleEditEvents
