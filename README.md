@@ -1,9 +1,9 @@
 # google-sheets-alert-to-discord
-Base code created by [rvbautista](https://github.com/rvbautista/google-sheets-alert-to-discord/) and continued by Pingu510
-A lot copied from [Paul Egan on slackoverflow](https://stackoverflow.com/a/62105239) regarding delay
+Base code created by [rvbautista](https://github.com/rvbautista/google-sheets-alert-to-discord/) and continued by Pingu510<br>
+A lot copied from [Paul Egan on slackoverflow](https://stackoverflow.com/a/62105239) regarding delay timer
 
 ## Function
-When Google Sheets is edited, wait for delay and then send update message to Discord.
+When Google Sheets is edited, check for new edits within delay and then send update message to Discord.
 
 ## Installation
 ### Create google sheet
