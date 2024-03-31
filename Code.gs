@@ -4,7 +4,15 @@
 // https://github.com/rvbautista/google-sheets-alert-to-discord/
 // https://github.com/Pingu510/google-sheets-alert-to-discord
 
+// variables to keep an eye on: 
+//  * discordWebhookUrl
+//  * time: sets delay, default 5min *optional
+//  * sheetUrl: *optional
+
 const gid = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetId();
+const discordWebhookUrl = "DISCORD_WEBHOOK_URL";  
+const sheetUrl = "GOOGLE_SPREADSHEET_URL"; // needs to look like this https://docs.google.com/spreadsheets/d/xxxxxxxx/edit#gid= to properly link to correct tab
+
 
 function onHandleEditEvents(editEvent) {
   const range = editEvent.range;
@@ -12,42 +20,26 @@ function onHandleEditEvents(editEvent) {
   setAtomicScriptProperties("eventTriggerWinner", eventId);
 
   // OPTIONAL: You might want to save values from each edit here, to be dealt with by the "winner"
-  updateRowRemainder(range);
-
-  Logger.log(`Waited with: ${gid} + ${eventId}`);
+  updateRowRemainder(range);  
   
   // delay
-  let time = 12*5; // 12 = 60s
+  let time = 12 * 5; // 12 = 60s * 5 => 5 min
+  Logger.log(`Waiting for changes in sheetId: ${gid}`);
+  
+  // Wait 5s to see if another Change/Edit event is triggered
   while(time > 0 ){
-    Utilities.sleep(5000);   // Wait to see if another Change/Edit event is triggered
+    Utilities.sleep(5000);   
     time--;
     if (getAtomicScriptProperties("eventTriggerWinner") != eventId) {
+      Logger.log(`New event for sheetId: ${gid}, canceling current instance.`);
       return;
     }
   }
 
-  Logger.log(`Trigger Winner: ${eventId}`);
+  Logger.log(`No further changes detected within timeframe, constructing message.`);
   callWebhook(constructMessage());
-
-  // cleanup
-  PropertiesService.getScriptProperties().deleteProperty(`${gid}editedRows`);
+  cleanup();
 }
-
-function updateRowRemainder(range){
-  let rows = [];
-
-  try {   
-    let reminder = JSON.parse(getAtomicScriptProperties(`editedRows`));    
-    reminder.forEach((item) => { rows.push(item); });      
-  } catch(err) {}
-  
-  try {
-    rows.push(range.getRow());
-  } catch(err) {}
-
-  setAtomicScriptProperties(`editedRows`, JSON.stringify(rows));
-}
-
 
 function setAtomicScriptProperties(property, value) {
   // Wrapping setProperty in a Lock probably isn't necessary since a set should be atomic
@@ -63,6 +55,26 @@ function getAtomicScriptProperties(property) {
   return PropertiesService.getScriptProperties().getProperty(gid + property);
 }
 
+function cleanup(){
+  PropertiesService.getScriptProperties().deleteProperty(`${gid}editedRows`);
+}
+
+function updateRowRemainder(range){
+  let rows = [];
+
+  // get 'old' edited rows from canceled events
+  try {
+    let reminder = JSON.parse(getAtomicScriptProperties(`editedRows`));    
+    reminder.forEach((item) => { rows.push(item); });      
+  } catch(err) {}
+  
+  // add current row
+  try {
+    rows.push(range.getRow());
+  } catch(err) {}
+
+  setAtomicScriptProperties(`editedRows`, JSON.stringify(rows));
+}
 
 function formatRowRemainder(){
   let rows = "";
@@ -71,7 +83,7 @@ function formatRowRemainder(){
   // distinct values, numerical sort and format array
   reminder = [...new Set(reminder)];
   reminder = reminder.sort((a,b) => a-b);
-  rows = reminder.value.join(", ");
+  rows = reminder.join(", "); // TODO: grouping like '2-6, 7, 9'
 
   return rows;
 }
@@ -79,13 +91,11 @@ function formatRowRemainder(){
 function constructMessage() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var sheetname = sheet.getName();
-  var sheetUrl = [GOOGLESPREADSHEET_URL]; // needs to look like this https://docs.google.com/spreadsheets/d/xxxxxxxx/edit#gid= to properly link to correct tab
-
+  
   return `[${sheetname}](<${sheetUrl}${gid}>) - Row(s) edited: ${formatRowRemainder()}`;
 }
 
 function callWebhook(message) {
-  var discordWebhookUrl = "[DISCORD_WEBHOOK_URL]";  
   var payload = JSON.stringify({content: message});
   
   var params = {
@@ -95,6 +105,6 @@ function callWebhook(message) {
       contentType: "application/json"
     };
 
-  var response = UrlFetchApp.fetch(discordWebhookUrl, params);
-  Logger.log(`Sent: ${payload}`);
+    Logger.log(`Sending: ${payload}`);
+    var response = UrlFetchApp.fetch(discordWebhookUrl, params);
 }
