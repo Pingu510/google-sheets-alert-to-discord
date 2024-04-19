@@ -10,6 +10,7 @@
 //  * sheetUrl: *optional
 
 const gid = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetId();
+const gidsIgnore = ["1111111111"];
 const discordWebhookUrl = "DISCORD_WEBHOOK_URL";  
 const sheetUrl = "GOOGLE_SPREADSHEET_URL"; // needs to look like this https://docs.google.com/spreadsheets/d/xxxxxxxx/edit#gid= to properly link to correct tab
 
@@ -18,6 +19,11 @@ function onHandleEditEvents(editEvent) {
   const range = editEvent.range;
   var eventId = Utilities.getUuid();
   setAtomicScriptProperties("eventTriggerWinner", eventId);
+
+  // OPTIONAL: Are there exclusion cases?
+  if(gidsIgnore.includes(gid.toString())) {
+    return;
+  } 
 
   // OPTIONAL: You might want to save values from each edit here, to be dealt with by the "winner"
   updateRowRemainder(range);  
