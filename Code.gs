@@ -8,9 +8,10 @@
 //  * discordWebhookUrl
 //  * time: sets delay, default 5min *optional
 //  * sheetUrl: *optional
+//  * gidsToIgnore: If there is sheets that should not be included in the notifications *optional 
 
 const gid = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetId();
-const gidsIgnore = ["1111111111"];
+const gidsToIgnore = ["1111111111"];
 const discordWebhookUrl = "DISCORD_WEBHOOK_URL";  
 const sheetUrl = "GOOGLE_SPREADSHEET_URL"; // needs to look like this https://docs.google.com/spreadsheets/d/xxxxxxxx/edit#gid= to properly link to correct tab
 
@@ -21,7 +22,7 @@ function onHandleEditEvents(editEvent) {
   setAtomicScriptProperties("eventTriggerWinner", eventId);
 
   // OPTIONAL: Are there exclusion cases?
-  if(gidsIgnore.includes(gid.toString())) {
+  if(gidsToIgnore.includes(gid.toString())) {
     return;
   } 
 
